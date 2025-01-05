@@ -10,7 +10,11 @@ interface Cura {
   estado: string;
 }
 
-const CurasList: React.FC = () => {
+interface CurasListProps {
+    selectedStatus: string;
+    refreshTrigger: number;
+  }
+  const CurasList: React.FC<CurasListProps> = ({ selectedStatus, refreshTrigger }) => {
   const [curas, setCuras] = useState<Cura[]>([]);
 
   useEffect(() => {
@@ -18,17 +22,17 @@ const CurasList: React.FC = () => {
     if (savedCuras) {
       try {
         const parsedCuras = JSON.parse(savedCuras);
-        if (Array.isArray(parsedCuras)) {
-          setCuras(parsedCuras);
-        } else {
-          console.error('Parsed curas is not an array');
-        }
+        console.log('parsedCuras:', parsedCuras);
+        console.log('selectedStatus:', selectedStatus);
+        const filteredCuras = parsedCuras.filter(
+          (cura: Cura) => cura.estado === selectedStatus.toLowerCase()
+        );
+        setCuras(filteredCuras);
       } catch (error) {
         console.error('Error parsing curas from localStorage', error);
       }
     }
-  }, []);
-
+  }, [selectedStatus, refreshTrigger]);
   const calcularProximaCura = (cura: Cura) => {
     if (!cura.planificada) return null;
     const horaComienzo = new Date(cura.horaComienzo);
