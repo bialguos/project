@@ -12,7 +12,7 @@ function App() {
       <Header />
       <div className="flex flex-1">
         <Sidebar setSelectedMenuItem={setSelectedMenuItem} />
-        <MainContent selectedMenuItem={selectedMenuItem} />
+        <MainContent selectedMenuItem={selectedMenuItem} setSelectedMenuItem={setSelectedMenuItem} />
       </div>
     </div>
   );

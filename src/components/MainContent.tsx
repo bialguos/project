@@ -1,11 +1,13 @@
 import React from 'react';
 import { RefreshCw, Save } from 'lucide-react';
 import HeridasQuirurgicasForm from './HeridasQuirurgicasForm';
+import CurasList from './CurasList';
 interface MainContentProps {
   selectedMenuItem: string | null;
+  setSelectedMenuItem: (menuItem: string | null) => void;
 }
 
-const MainContent: React.FC<MainContentProps> = ({ selectedMenuItem }) => {
+const MainContent: React.FC<MainContentProps> = ({ selectedMenuItem, setSelectedMenuItem }) => {
   return (
     <div className="flex-1 p-4">
       <div className="bg-white rounded-lg shadow">
@@ -27,9 +29,9 @@ const MainContent: React.FC<MainContentProps> = ({ selectedMenuItem }) => {
         </div>
         <div className="p-4">
         {selectedMenuItem === 'Herida Quirúrgica' ? (
-        <HeridasQuirurgicasForm />
+        <HeridasQuirurgicasForm setSelectedMenuItem={setSelectedMenuItem} />
       ) : (
-        <p>Seleccione una opción del menú</p>
+        <CurasList />
       )}
         </div>
       </div>

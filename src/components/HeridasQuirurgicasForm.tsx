@@ -1,17 +1,43 @@
 // FILE: HeridasQuirurgicasForm.tsx
 import React, { useState } from 'react';
 
-const HeridasQuirurgicasForm: React.FC = () => {
+interface HeridasQuirurgicasFormProps {
+  setSelectedMenuItem: (menuItem: string | null) => void;
+}
+
+const HeridasQuirurgicasForm: React.FC<HeridasQuirurgicasFormProps> = ({ setSelectedMenuItem }) => {
   const [formData, setFormData] = useState({
     descripcion: '',
     planificada: false,
     frecuenciaHoras: '',
-    frecuenciaMinutos: ''
+    frecuenciaMinutos: '',
+    horaComienzo: ''
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Lógica para manejar el envío del formulario
+    const dataToSave = {
+      ...formData,
+      horaComienzo: new Date().toISOString(),
+      estado: 'pendiente'
+    };
+    const savedCuras = localStorage.getItem('heridasQuirurgicas');
+    let curas = [];
+    if (savedCuras) {
+      try {
+        curas = JSON.parse(savedCuras);
+        if (!Array.isArray(curas)) {
+          curas = [];
+        }
+      } catch (error) {
+        console.error('Error parsing curas from localStorage', error);
+        curas = [];
+      }
+    }
+    curas.push(dataToSave);
+    localStorage.setItem('heridasQuirurgicas', JSON.stringify(curas));
+    alert('Datos guardados correctamente');
+    setSelectedMenuItem(null); // Cerrar el formulario
   };
 
   return (
@@ -41,29 +67,32 @@ const HeridasQuirurgicasForm: React.FC = () => {
             }))}
           />
           <label htmlFor="planificada">Planificada</label>
-      
-        {formData.planificada && (
-          
-            <><label className="block text-sm font-medium text-gray-700">Frecuencia</label><input
-                          type="number"
-                          className="mt-1 p-2 w-20 border rounded"
-                          placeholder="Horas"
-                          value={formData.frecuenciaHoras}
-                          onChange={(e) => setFormData(prev => ({
-                              ...prev,
-                              frecuenciaHoras: e.target.value
-                          }))} /><input
-                              type="number"
-                              className="mt-1 p-2 w-20 border rounded"
-                              placeholder="Minutos"
-                              value={formData.frecuenciaMinutos}
-                              onChange={(e) => setFormData(prev => ({
-                                  ...prev,
-                                  frecuenciaMinutos: e.target.value
-                              }))} /></>
-        
-        )}
-          </div>
+          {formData.planificada && (
+            <>
+              <label className="block text-sm font-medium text-gray-700">Frecuencia</label>
+              <input
+                type="number"
+                className="mt-1 p-2 w-20 border rounded"
+                placeholder="Horas"
+                value={formData.frecuenciaHoras}
+                onChange={(e) => setFormData(prev => ({
+                  ...prev,
+                  frecuenciaHoras: e.target.value
+                }))}
+              />
+              <input
+                type="number"
+                className="mt-1 p-2 w-20 border rounded"
+                placeholder="Minutos"
+                value={formData.frecuenciaMinutos}
+                onChange={(e) => setFormData(prev => ({
+                  ...prev,
+                  frecuenciaMinutos: e.target.value
+                }))}
+              />
+            </>
+          )}
+        </div>
         <div className="flex justify-end gap-2">
           <button
             type="submit"
@@ -74,6 +103,7 @@ const HeridasQuirurgicasForm: React.FC = () => {
           <button
             type="button"
             className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+            onClick={() => setSelectedMenuItem(null)} // Cerrar el formulario al cancelar
           >
             Cancelar
           </button>
