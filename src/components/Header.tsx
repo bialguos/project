@@ -1,6 +1,7 @@
 import React from 'react';
 import { Stethoscope } from 'lucide-react';
 import { Tooltip } from 'react-tooltip';
+import 'react-tooltip/dist/react-tooltip.css';
 
 const Header = () => {
   // Datos del paciente (puedes reemplazar estos valores con datos reales)
@@ -35,18 +36,21 @@ const Header = () => {
       <div className="flex flex-col space-y-2">
       <button
           className="relative px-2 py-1 bg-red-500 text-white text-sm rounded hover:bg-red-600"
-          data-tip
-          data-for="alergiasTooltip"
+          data-tooltip-id="alergiasTooltip"
+    
         >
           Alergias
           <span className="absolute top-0 right-0 inline-block w-4 h-4 bg-red-600 text-white text-xs rounded-full text-center">
             {alergias.length}
           </span>
         </button>
-        <Tooltip id="alergiasTooltip" place="right" type="dark">
-          <ul className="list-disc pl-4">
-            {alergias.map((alergia, index) => (
-              <li key={index}>{alergia}</li>
+        <Tooltip 
+          id="alergiasTooltip"
+          place="left"
+        >
+          <ul className="list-none  pl-0">
+            {alergias.map((alergia, idx) => (
+              <li key={idx}>{alergia}</li>
             ))}
           </ul>
         </Tooltip>
