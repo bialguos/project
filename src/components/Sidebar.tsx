@@ -1,10 +1,15 @@
+// FILE: Sidebar.tsx
 import React, { useState } from 'react';
-import { FolderArchive, FileText, ChevronLeft } from 'lucide-react';
-import { MenuItem } from '../types/menu';
+import type { MenuItem } from '../types/menu';
 import { menuItems } from '../data/menuItems';
 import Breadcrumbs from './Breadcrumbs';
+import { ChevronLeft } from 'lucide-react';
 
-const Sidebar = () => {
+interface SidebarProps {
+  setSelectedMenuItem: (menuItem: string | null) => void;
+}
+
+const Sidebar: React.FC<SidebarProps> = ({ setSelectedMenuItem }) => {
   const [currentItems, setCurrentItems] = useState<MenuItem[]>(menuItems);
   const [breadcrumbs, setBreadcrumbs] = useState<string[]>(['INICIO']);
   const [navigationPath, setNavigationPath] = useState<MenuItem[]>([]);
@@ -14,6 +19,9 @@ const Sidebar = () => {
       setCurrentItems(item.children);
       setBreadcrumbs([...breadcrumbs, item.label]);
       setNavigationPath([...navigationPath, item]);
+    } else {
+      console.log('Selected:', item.label);
+      setSelectedMenuItem(item.label);
     }
   };
 
@@ -22,17 +30,14 @@ const Sidebar = () => {
       setCurrentItems(menuItems);
       setBreadcrumbs(['INICIO']);
       setNavigationPath([]);
+      setSelectedMenuItem(null);
     } else {
       const newPath = navigationPath.slice(0, level);
       const newBreadcrumbs = ['INICIO', ...newPath.map(item => item.label)];
-      
-      setNavigationPath(newPath);
+      setCurrentItems(newPath[newPath.length - 1].children || []);
       setBreadcrumbs(newBreadcrumbs);
-      setCurrentItems(
-        newPath.length > 0 
-          ? newPath[newPath.length - 1].children || [] 
-          : menuItems
-      );
+      setNavigationPath(newPath);
+      setSelectedMenuItem(null);
     }
   };
 
@@ -62,20 +67,15 @@ const Sidebar = () => {
           </button>
         )}
 
-        <div className="space-y-2">
+        <div className="flex flex-col space-y-2">
           {currentItems.map((item) => (
-            <div
-              key={item.id}
-              className="flex items-center space-x-2 p-2 hover:bg-blue-100 cursor-pointer rounded"
+            <button
+              key={item.label}
               onClick={() => handleItemClick(item)}
+              className={`p-2 text-left ${breadcrumbs.includes(item.label) ? 'bg-blue-200' : 'hover:bg-blue-100'} rounded`}
             >
-              {item.hasChildren ? (
-                <FolderArchive className="w-5 h-5 text-gray-600" />
-              ) : (
-                <FileText className="w-5 h-5 text-gray-600" />
-              )}
-              <span className="text-sm">{item.label}</span>
-            </div>
+              {item.label}
+            </button>
           ))}
         </div>
       </div>

@@ -8,9 +8,7 @@ const Header = () => {
         <Stethoscope className="w-6 h-6 text-gray-600" />
         <h1 className="text-xl text-gray-700">Cuidados de Enfermería</h1>
       </div>
-      <div className="text-right">
-        <span className="text-sm text-gray-600">ESTADO</span>
-      </div>
+     
     </div>
   );
 };

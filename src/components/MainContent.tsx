@@ -1,7 +1,11 @@
 import React from 'react';
 import { RefreshCw, Save } from 'lucide-react';
+import HeridasQuirurgicasForm from './HeridasQuirurgicasForm';
+interface MainContentProps {
+  selectedMenuItem: string | null;
+}
 
-const MainContent = () => {
+const MainContent: React.FC<MainContentProps> = ({ selectedMenuItem }) => {
   return (
     <div className="flex-1 p-4">
       <div className="bg-white rounded-lg shadow">
@@ -22,7 +26,11 @@ const MainContent = () => {
           </div>
         </div>
         <div className="p-4">
-          {/* Contenido principal - se puede expandir según necesidades */}
+        {selectedMenuItem === 'Herida Quirúrgica' ? (
+        <HeridasQuirurgicasForm />
+      ) : (
+        <p>Seleccione una opción del menú</p>
+      )}
         </div>
       </div>
     </div>
