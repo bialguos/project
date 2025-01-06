@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { RefreshCw, Save } from 'lucide-react';
 import HeridasQuirurgicasForm from './HeridasQuirurgicasForm';
 import CurasList from './CurasList';
+import { SelectedMenuInfo } from './Sidebar';
 const styles = `
 @keyframes spin {
   from { transform: rotate(0deg); }
@@ -14,15 +15,35 @@ const styles = `
 }
 `;
 interface MainContentProps {
-  selectedMenuItem: string | null;
-  setSelectedMenuItem: (menuItem: string | null) => void;
+  selectedMenuItem: SelectedMenuInfo | null;
+  setSelectedMenuItem: (menuItem: SelectedMenuInfo | null) => void;
 }
 
 const MainContent: React.FC<MainContentProps> = ({ selectedMenuItem, setSelectedMenuItem }) => {
   const [selectedStatus, setSelectedStatus] = useState<string>('Pendiente');
   const [refreshTrigger, setRefreshTrigger] = useState<number>(0);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [selectedStates, setSelectedStates] = useState<{[key: number]: 'realizado' | 'anulada' | null}>({});
 
+  const handleSave = () => {
+    const savedCuras = localStorage.getItem('heridasQuirurgicas');
+    if (savedCuras) {
+      try {
+        let allCuras = JSON.parse(savedCuras);
+        // Update states based on selectedStates from CurasList
+        allCuras = allCuras.map((cura: Cura, index: number) => {
+          if (cura.estado === 'realizada' && selectedStates[index] === 'cancelada') {
+            return { ...cura, estado: 'pendiente' };
+          }
+          return cura;
+        });
+        localStorage.setItem('heridasQuirurgicas', JSON.stringify(allCuras));
+        setRefreshTrigger(prev => prev + 1);
+      } catch (error) {
+        console.error('Error saving curas:', error);
+      }
+    }
+  };
   const handleRefresh = () => {
     setIsRefreshing(true);
     setRefreshTrigger(prev => prev + 1);
@@ -46,7 +67,10 @@ const MainContent: React.FC<MainContentProps> = ({ selectedMenuItem, setSelected
               onChange={(e) => setSelectedStatus(e.target.value)}
             >
               <option>Pendiente</option>
-              <option>Completado</option>
+              <option>Realizado</option>
+              <option>Stop</option>
+              <option>Anulado</option>
+              <option>Finalizado</option>
             </select>
             <button 
                 className="p-1 hover:bg-gray-100 rounded"
@@ -55,18 +79,27 @@ const MainContent: React.FC<MainContentProps> = ({ selectedMenuItem, setSelected
               >
                <RefreshCw className={`w-5 h-5 text-gray-600 ${isRefreshing ? 'spin' : ''}`} />
             </button>
-            <button className="p-1 hover:bg-gray-100 rounded">
+            <button className="p-1 hover:bg-gray-100 rounded"
+            onClick={handleSave}>
               <Save className="w-5 h-5 text-gray-600" />
             </button>
           </div>
         </div>
         <div className="p-4">
-          {selectedMenuItem === 'Herida Quirúrgica' ? (
-            <HeridasQuirurgicasForm setSelectedMenuItem={setSelectedMenuItem} />
-          ) : (
-            <CurasList selectedStatus={selectedStatus} 
-                              refreshTrigger={refreshTrigger} />
-          )}
+        {selectedMenuItem?.label === 'Herida Quirúrgica' ? (
+        <HeridasQuirurgicasForm 
+          setSelectedMenuItem={setSelectedMenuItem} 
+          breadcrumbPath={selectedMenuItem.path}
+          selectionMenuItem = {selectedMenuItem?.label}
+        />
+      ) : (
+        <CurasList 
+          selectedStatus={selectedStatus} 
+          refreshTrigger={refreshTrigger} 
+          selectedStates={selectedStates}
+          setSelectedStates={setSelectedStates}
+        />
+      )}
         </div>
       </div>
     </div>

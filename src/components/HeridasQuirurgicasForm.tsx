@@ -1,11 +1,18 @@
 // FILE: HeridasQuirurgicasForm.tsx
 import React, { useState } from 'react';
+import { SelectedMenuInfo } from './Sidebar';
 
 interface HeridasQuirurgicasFormProps {
-  setSelectedMenuItem: (menuItem: string | null) => void;
-}
+    setSelectedMenuItem: (menuItem: SelectedMenuInfo | null) => void;
+    breadcrumbPath: string;
+    selectionMenuItem : string
+  }
 
-const HeridasQuirurgicasForm: React.FC<HeridasQuirurgicasFormProps> = ({ setSelectedMenuItem }) => {
+  const HeridasQuirurgicasForm: React.FC<HeridasQuirurgicasFormProps> = ({ 
+    setSelectedMenuItem,
+    breadcrumbPath,
+    selectionMenuItem 
+  }) => {
   const [formData, setFormData] = useState({
     descripcion: '',
     planificada: false,
@@ -16,10 +23,12 @@ const HeridasQuirurgicasForm: React.FC<HeridasQuirurgicasFormProps> = ({ setSele
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('setSelectedMenuItem:', setSelectedMenuItem);
     const dataToSave = {
       ...formData,
       horaComienzo: new Date().toISOString(),
-      estado: 'pendiente'
+      estado: formData.planificada ? 'pendiente' : 'realizado',
+      titulo: breadcrumbPath + '\\' + selectionMenuItem
     };
     const savedCuras = localStorage.getItem('heridasQuirurgicas');
     let curas = [];

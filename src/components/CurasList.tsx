@@ -1,5 +1,5 @@
-// FILE: CurasList.tsx
 import React, { useEffect, useState } from 'react';
+import { Circle } from 'lucide-react';
 
 interface Cura {
   descripcion: string;
@@ -8,22 +8,33 @@ interface Cura {
   frecuenciaMinutos: string;
   horaComienzo: string;
   estado: string;
+  titulo: string;
 }
 
 interface CurasListProps {
-    selectedStatus: string;
-    refreshTrigger: number;
-  }
-  const CurasList: React.FC<CurasListProps> = ({ selectedStatus, refreshTrigger }) => {
+  selectedStatus: string;
+  refreshTrigger: number;
+  selectedStates: {[key: number]: 'realizado' | 'anulada' | null};
+  setSelectedStates: React.Dispatch<React.SetStateAction<{[key: number]: 'realizado' | 'anulada' | null}>>;
+}
+
+const CurasList: React.FC<CurasListProps> = ({ selectedStatus, refreshTrigger, selectedStates,
+    setSelectedStates }) => {
   const [curas, setCuras] = useState<Cura[]>([]);
+  
+
+  const handleStateChange = (index: number, state: 'realizado' | 'anulada') => {
+    setSelectedStates(prev => ({
+      ...prev,
+      [index]: prev[index] === state ? null : state
+    }));
+  };
 
   useEffect(() => {
     const savedCuras = localStorage.getItem('heridasQuirurgicas');
     if (savedCuras) {
       try {
         const parsedCuras = JSON.parse(savedCuras);
-        console.log('parsedCuras:', parsedCuras);
-        console.log('selectedStatus:', selectedStatus);
         const filteredCuras = parsedCuras.filter(
           (cura: Cura) => cura.estado === selectedStatus.toLowerCase()
         );
@@ -33,40 +44,92 @@ interface CurasListProps {
       }
     }
   }, [selectedStatus, refreshTrigger]);
-  const calcularProximaCura = (cura: Cura) => {
-    if (!cura.planificada) return null;
-    const horaComienzo = new Date(cura.horaComienzo);
-    const frecuenciaHoras = parseInt(cura.frecuenciaHoras, 10);
-    const frecuenciaMinutos = parseInt(cura.frecuenciaMinutos, 10);
-    const proximaCura = new Date(horaComienzo.getTime() + frecuenciaHoras * 60 * 60 * 1000 + frecuenciaMinutos * 60 * 1000);
-    return proximaCura.toLocaleString();
-  };
+
+
 
   return (
-    <div className="bg-white rounded-md p-4">
-      <h2 className="text-lg font-bold mb-4">Curas / Herida Quirúrgica</h2>
-      {curas.length === 0 ? (
-        <p>No hay curas guardadas.</p>
+    <div className="bg-white rounded-md">
+      <div className="divide-y divide-gray-200">
+        {curas.length === 0 ? (
+          <p className="p-4">No hay curas guardadas.</p>
+        ) : (
+          curas.map((cura, index) => (
+            <div key={index} className="p-4 bg-[#E6EEF9] flex justify-between">
+  <div className="flex flex-col space-y-2">
+    <h4 className="font-bold text-m">{cura.titulo}</h4>
+    <span className="text-sm">{cura.descripcion}</span>
+    <div className="flex space-x-4">
+    {cura.estado === 'realizado' ? (
+        <>
+          <div className="flex items-center space-x-2">
+            <input
+              type="radio"
+              id={`realizado-${index}`}
+              name={`estado-${index}`}
+              checked={true}              
+              className="form-radio h-4 w-4"
+            />
+            <label htmlFor={`realizado-${index}`} className="text-sm">Realizada</label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <input
+              type="radio"
+              id={`cancelar-${index}`}
+              name={`estado-${index}`}
+              checked={selectedStates[index] === 'cancelada'}
+              onChange={() => handleStateChange(index, 'cancelada')}
+              className="form-radio h-4 w-4"
+            />
+            <label htmlFor={`cancelar-${index}`} className="text-sm">Cancelar realización</label>
+          </div>
+        </>
       ) : (
-        <ul>
-          {curas.map((cura, index) => (
-            <li key={index} className="mb-4">
-              <div className="flex justify-between">
-                <span>{cura.descripcion}</span>
-                <span>{new Date(cura.horaComienzo).toLocaleString()}</span>
-              </div>
-              {cura.planificada && (
-                <div className="text-sm text-gray-600">
-                  Próxima cura: {calcularProximaCura(cura)}
-                </div>
-              )}
-              <div className="text-sm text-gray-600">
-                Estado: {cura.estado}
-              </div>
-            </li>
-          ))}
-        </ul>
+        <>
+          <div className="flex items-center space-x-2">
+            <input
+              type="radio"
+              id={`realizado-${index}`}
+              name={`estado-${index}`}
+              checked={selectedStates[index] === 'realizado'}
+              onChange={() => handleStateChange(index, 'realizadoa')}
+              className="form-radio h-4 w-4"
+            />
+            <label htmlFor={`realizado-${index}`} className="text-sm">Realizada</label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <input
+              type="radio"
+              id={`anulada-${index}`}
+              name={`estado-${index}`}
+              checked={selectedStates[index] === 'anulada'}
+              onChange={() => handleStateChange(index, 'anulada')}
+              className="form-radio h-4 w-4"
+            />
+            <label htmlFor={`anulada-${index}`} className="text-sm">Anulada</label>
+          </div>
+        </>
       )}
+    </div>
+  </div>
+  
+  <div className="flex items-center space-x-4">
+    <div className="flex flex-col text-xs text-gray-600">
+      <span>F.Solicitud</span>
+      <span>{new Date(cura.horaComienzo).toLocaleString()}</span>
+      <span>F.Actual</span>
+      <span>{new Date().toLocaleString()}</span>
+    </div>
+    <div className="flex items-center">
+      <span className="mr-2">P</span>
+      <Circle 
+        className={`w-6 h-6 ${cura.estado === 'pendiente' ? 'text-red-500 fill-red-500' : 'text-green-500 fill-green-500'}`}
+      />
+    </div>
+  </div>
+</div>
+          ))
+        )}
+      </div>
     </div>
   );
 };

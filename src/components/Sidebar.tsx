@@ -5,10 +5,14 @@ import { menuItems } from '../data/menuItems';
 import Breadcrumbs from './Breadcrumbs';
 import { ChevronLeft } from 'lucide-react';
 
-interface SidebarProps {
-  setSelectedMenuItem: (menuItem: string | null) => void;
+export interface SelectedMenuInfo {
+  label: string;
+  path: string;
 }
 
+interface SidebarProps {
+  setSelectedMenuItem: (menuItem: SelectedMenuInfo | null) => void;
+}
 const Sidebar: React.FC<SidebarProps> = ({ setSelectedMenuItem }) => {
   const [currentItems, setCurrentItems] = useState<MenuItem[]>(menuItems);
   const [breadcrumbs, setBreadcrumbs] = useState<string[]>(['INICIO']);
@@ -20,8 +24,11 @@ const Sidebar: React.FC<SidebarProps> = ({ setSelectedMenuItem }) => {
       setBreadcrumbs([...breadcrumbs, item.label]);
       setNavigationPath([...navigationPath, item]);
     } else {
-      console.log('Selected:', item.label);
-      setSelectedMenuItem(item.label);
+      const path = breadcrumbs.slice(1).join(' / ');
+      setSelectedMenuItem({ 
+        label: item.label,
+        path: path 
+      });
     }
   };
 
