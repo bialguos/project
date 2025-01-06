@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { RefreshCw, Save } from 'lucide-react';
 import HeridasQuirurgicasForm from './HeridasQuirurgicasForm';
-import CurasList from './CurasList';
+import CurasList, { Cura } from './CurasList';
 import { SelectedMenuInfo } from './Sidebar';
 const styles = `
 @keyframes spin {
@@ -23,17 +23,23 @@ const MainContent: React.FC<MainContentProps> = ({ selectedMenuItem, setSelected
   const [selectedStatus, setSelectedStatus] = useState<string>('Pendiente');
   const [refreshTrigger, setRefreshTrigger] = useState<number>(0);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [selectedStates, setSelectedStates] = useState<{[key: number]: 'realizado' | 'anulada' | null}>({});
+  const [selectedStates, setSelectedStates] = useState<{[key: number]: 'realizado' | 'anulado' | 'cancelada'| null}>({});
 
   const handleSave = () => {
     const savedCuras = localStorage.getItem('heridasQuirurgicas');
     if (savedCuras) {
       try {
         let allCuras = JSON.parse(savedCuras);
+        console.log('selectedStates:', selectedStates);
         // Update states based on selectedStates from CurasList
         allCuras = allCuras.map((cura: Cura, index: number) => {
-          if (cura.estado === 'realizada' && selectedStates[index] === 'cancelada') {
+          if (cura.estado === 'realizado' && selectedStates[index] === 'cancelada') {
             return { ...cura, estado: 'pendiente' };
+          } 
+          else if (cura.estado === 'pendiente' && selectedStates[index] === 'anulado') {
+            return { ...cura, estado: 'anulado' };
+          } else if (selectedStates[index] === 'realizado') {
+            return { ...cura, estado: 'realizado' };
           }
           return cura;
         });
