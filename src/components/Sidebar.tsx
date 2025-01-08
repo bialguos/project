@@ -1,23 +1,53 @@
-// FILE: Sidebar.tsx
 import React, { useState } from 'react';
 import type { MenuItem } from '../types/menu';
 import { menuItems } from '../data/menuItems';
 import Breadcrumbs from './Breadcrumbs';
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft, FolderOpen, FileText } from 'lucide-react';
 
 export interface SelectedMenuInfo {
   label: string;
   path: string;
+  
 }
 
 interface SidebarProps {
   setSelectedMenuItem: (menuItem: SelectedMenuInfo | null) => void;
 }
+
 const Sidebar: React.FC<SidebarProps> = ({ setSelectedMenuItem }) => {
   const [currentItems, setCurrentItems] = useState<MenuItem[]>(menuItems);
   const [breadcrumbs, setBreadcrumbs] = useState<string[]>(['INICIO']);
   const [navigationPath, setNavigationPath] = useState<MenuItem[]>([]);
+  const [searchText, setSearchText] = useState('');
 
+  const searchMenuItems = (items: MenuItem[], searchTerm: string): MenuItem[] => {
+    let results: MenuItem[] = [];
+    
+    for (const item of items) {
+      if (item.label.toLowerCase().includes(searchTerm.toLowerCase())) {
+        results.push(item);
+      }
+      if (item.children) {
+        results = [...results, ...searchMenuItems(item.children, searchTerm)];
+      }
+    }
+    
+    return results;
+  };
+
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const searchTerm = e.target.value;
+    setSearchText(searchTerm);
+    
+    if (searchTerm.trim() === '') {
+      setCurrentItems(menuItems);
+    } else {
+      const filteredItems = searchMenuItems(menuItems, searchTerm);
+      setCurrentItems(filteredItems);
+    }
+  };
+
+  
   const handleItemClick = (item: MenuItem) => {
     if (item.hasChildren && item.children) {
       setCurrentItems(item.children);
@@ -61,6 +91,8 @@ const Sidebar: React.FC<SidebarProps> = ({ setSelectedMenuItem }) => {
             type="text"
             placeholder="Introduzca acción a realizar..."
             className="w-full p-2 text-sm border rounded"
+            value={searchText}
+            onChange={handleSearch}
           />
         </div>
 
@@ -79,9 +111,16 @@ const Sidebar: React.FC<SidebarProps> = ({ setSelectedMenuItem }) => {
             <button
               key={item.label}
               onClick={() => handleItemClick(item)}
-              className={`p-2 text-left ${breadcrumbs.includes(item.label) ? 'bg-blue-200' : 'hover:bg-blue-100'} rounded`}
+              className={`p-2 text-left flex items-center space-x-2 ${
+                breadcrumbs.includes(item.label) ? 'bg-blue-200' : 'hover:bg-blue-100'
+              } rounded`}
             >
-              {item.label}
+              {item.hasChildren ? (
+                <FolderOpen className="w-4 h-4 text-blue-600" />
+              ) : (
+                <FileText className="w-4 h-4 text-gray-600" />
+              )}
+              <span>{item.label}</span>
             </button>
           ))}
         </div>

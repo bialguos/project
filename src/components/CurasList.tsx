@@ -30,7 +30,26 @@ const CurasList: React.FC<CurasListProps> = ({
   const [curas, setCuras] = useState<Cura[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [selectedCura, setSelectedCura] = useState<Cura | null>(null);
-
+  const handleModalClose = () => {
+    setShowModal(false);
+    // Find index of selected cura
+    if (selectedCura) {
+      const selectedIndex = curas.findIndex(
+        cura => cura.horaComienzo === selectedCura.horaComienzo
+      );
+      
+      // Deselect 'realizado' radio button
+      if (selectedIndex !== -1) {
+        setSelectedStates(prev => ({
+          ...prev,
+          [selectedIndex]: null
+        }));
+      }
+    }
+    // Reset modal state
+    setSelectedCura(null);
+    setShowModal(false);
+  };
   const handleStateChange = (index: number, state: 'realizado' | 'anulado' | 'cancelada') => {
     const cura = curas[index];
     if (cura.planificada && state === 'realizado') {
@@ -144,6 +163,7 @@ const CurasList: React.FC<CurasListProps> = ({
               </div>
               
               <div className="flex items-center space-x-4">
+              {cura.planificada && <span className="mr-4 font-bold text-lg">P</span>}
                 <div className="flex flex-col text-xs text-gray-600">
                   <span>F.Solicitud</span>
                   <span>{new Date(cura.horaComienzo).toLocaleString()}</span>
@@ -151,7 +171,7 @@ const CurasList: React.FC<CurasListProps> = ({
                   <span>{new Date().toLocaleString()}</span>
                 </div>
                 <div className="flex items-center">
-                  <span className="mr-2">P</span>
+                
                   <Circle 
                     className={`w-6 h-6 ${
                       cura.estado === 'pendiente' 
@@ -170,7 +190,7 @@ const CurasList: React.FC<CurasListProps> = ({
       {showModal && selectedCura && (
         <PlannedTaskModal
           isOpen={showModal}
-          onClose={() => setShowModal(false)}
+          onClose={handleModalClose}
           onSave={handleModalSave}
           cura={selectedCura}
         />
