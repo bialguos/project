@@ -20,12 +20,14 @@ interface MainContentProps {
   selectedMenuItem: SelectedMenuInfo | null;
   setSelectedMenuItem: (menuItem: SelectedMenuInfo | null) => void;
 }
-
+interface SelectedStates {
+  [id: string]: 'realizado' | 'anulado' | 'cancelada' | 'finalizado' | 'stop' | null;
+}
 const MainContent: React.FC<MainContentProps> = ({ selectedMenuItem, setSelectedMenuItem }) => {
   const [selectedStatus, setSelectedStatus] = useState<string>('Pendiente');
   const [refreshTrigger, setRefreshTrigger] = useState<number>(0);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [selectedStates, setSelectedStates] = useState<{[key: number]: 'realizado' | 'anulado' | 'cancelada'| null}>({});
+  const [selectedStates, setSelectedStates] = useState<SelectedStates>({});
 
   const handleSave = () => {
     const savedCuras = localStorage.getItem('heridasQuirurgicas');
@@ -33,13 +35,22 @@ const MainContent: React.FC<MainContentProps> = ({ selectedMenuItem, setSelected
       try {
         let allCuras = JSON.parse(savedCuras);
         allCuras = allCuras.map((cura: Cura, index: number) => {
-          if (cura.estado === 'realizado' && selectedStates[index] === 'cancelada') {
+          console.log('cura.estado:', cura.estado); 
+          console.log('selectedStates[index]:', selectedStates[cura.id]); 
+          if (cura.estado === 'realizado' && selectedStates[cura.id] === 'cancelada') {
             return { ...cura, estado: 'pendiente' };
           } 
-          else if (cura.estado === 'pendiente' && selectedStates[index] === 'anulado') {
+          else if (cura.estado === 'pendiente' && selectedStates[cura.id] === 'anulado') {
             return { ...cura, estado: 'anulado' };
-          } else if (selectedStates[index] === 'realizado') {
+          } 
+          else if (selectedStates[cura.id] === 'realizado') {
             return { ...cura, estado: 'realizado' };
+          }
+          else if (cura.estado === 'pendiente' && selectedStates[cura.id] === 'finalizado') {
+            return { ...cura, estado: 'finalizado' };
+          }
+          else if (cura.estado === 'pendiente' && selectedStates[cura.id] === 'stop') {
+            return { ...cura, estado: 'stop' };
           }
           return cura;
         });

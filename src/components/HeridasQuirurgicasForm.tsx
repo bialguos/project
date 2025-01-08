@@ -27,6 +27,7 @@ interface HeridasQuirurgicasFormProps {
     const dataToSave = {
       ...formData,
       horaComienzo: new Date().toISOString(),
+      id: crypto.randomUUID(),
       estado: formData.planificada ? 'pendiente' : 'realizado',
       titulo: breadcrumbPath + '\\' + selectionMenuItem
     };
