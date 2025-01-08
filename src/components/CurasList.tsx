@@ -8,6 +8,7 @@ export interface Cura {
   frecuenciaHoras: string;
   frecuenciaMinutos: string;
   horaComienzo: string;
+  fechaPrevista?: string;  
   estado: string;
   titulo: string;
 }
@@ -62,23 +63,48 @@ const CurasList: React.FC<CurasListProps> = ({
     }));
   };
 
+  const calculateNextDate = (cura: Cura): Date => {
+    const currentDate = new Date();
+    const frecuenciaHoras = parseInt(cura.frecuenciaHoras) || 0;
+    const frecuenciaMinutos = parseInt(cura.frecuenciaMinutos) || 0;
+    const totalMinutes = (frecuenciaHoras * 60) + frecuenciaMinutos;
+    
+    return new Date(currentDate.getTime() + totalMinutes * 60000);
+  };
+
+  
   const handleModalSave = () => {
     if (selectedCura) {
       const savedCuras = localStorage.getItem('heridasQuirurgicas');
       if (savedCuras) {
         const allCuras = JSON.parse(savedCuras);
-        // Create a new task as realized
+        const nextDate = calculateNextDate(selectedCura);
+        
+        // Create new completed task
         const newTask = {
           ...selectedCura,
-          estado: 'realizado',
-          horaComienzo: new Date().toISOString()
+          estado: 'pendiente',          
+          fechaPrevista: nextDate.toISOString()
         };
+        
+        // Update original task to pending
+        const originalIndex = allCuras.findIndex(
+          (cura: Cura) => cura.horaComienzo === selectedCura.horaComienzo
+        );
+        if (originalIndex !== -1) {
+          allCuras[originalIndex] = {
+            ...allCuras[originalIndex],
+            estado: 'realizado'
+          };
+        }
+        
+        // Add new task and save
         allCuras.push(newTask);
         localStorage.setItem('heridasQuirurgicas', JSON.stringify(allCuras));
         setRefreshTrigger(prev => prev + 1);
       }
     }
-    setShowModal(false);
+    handleModalClose();
   };
 
   useEffect(() => {
@@ -168,8 +194,13 @@ const CurasList: React.FC<CurasListProps> = ({
                   <span>F.Solicitud</span>
                   <span>{new Date(cura.horaComienzo).toLocaleString()}</span>
                   <span>F.Actual</span>
-                  <span>{new Date().toLocaleString()}</span>
-                </div>
+                  <span>
+                    {cura.fechaPrevista 
+                      ? new Date(cura.fechaPrevista).toLocaleString() 
+                      : new Date().toLocaleString()
+                    }
+                  </span>
+                                  </div>
                 <div className="flex items-center">
                 
                   <Circle 
