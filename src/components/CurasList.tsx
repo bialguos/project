@@ -161,7 +161,11 @@ const CurasList: React.FC<CurasListProps> = ({
                         <label htmlFor={`cancelar-${index}`} className="text-sm">Cancelar realización</label>
                       </div>
                     </>
-                  ) : (
+                  ) : cura.estado === 'finalizado' || cura.estado === 'stop' ? (
+  <div className="flex items-center space-x-2">
+    <span className="text-sm">{cura.estado === 'finalizado' ? 'Finalizado' : 'Stop'}</span>
+  </div>
+) : (
                     <>
                     
                       {!cura.estado.includes('realizado')  &&  typeof cura.fechaPrevista === 'undefined'  ? (
